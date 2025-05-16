@@ -3,29 +3,18 @@
 package main
 
 import (
-"github.com/zachrundle/zcp/cmd"
-"flag"
-"k8s.io/klog/v2"
+	"github.com/zachrundle/zcp/cmd"
+
 )
-
-func init() {
-	klog.InitFlags(nil)
-
-	if err := flag.Set("logtostderr", "false"); err != nil {
-		panic(err)
-	}
-	if err := flag.Set("alsologtostderr", "false"); err != nil {
-		panic(err)
-	}
-	if err := flag.Set("stderrthreshold", "fatal"); err != nil {
-		panic(err)
-	}
-	if err := flag.Set("v", "0"); err != nil {
-		panic(err)
-	}
-}
 
 
 func main() {
+//	f, err := tea.LogToFile("/var/log/zcp/debug.log", "debug")
+	//if err != nil {
+		  //fmt.Println("fatal:", err)
+		  //os.Exit(1)
+	//}
+	//defer f.Close()
 	cmd.Execute()
+	
 }
