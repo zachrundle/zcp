@@ -12,6 +12,7 @@ type BaseCluster struct {
 	iam            string
 	cursor         int
 	selected       map[int]struct{}
+	keyPrompt string
 }
 
 

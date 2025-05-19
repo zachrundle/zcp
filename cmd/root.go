@@ -4,9 +4,11 @@ package cmd
 
 import (
 	"os"
-	"github.com/zachrundle/zcp/internal/models"
-tea "github.com/charmbracelet/bubbletea"
+	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+	"github.com/zachrundle/zcp/internal/models"
+	"github.com/zachrundle/zcp/internal/setup"
 )
 
 const (
@@ -19,17 +21,18 @@ AWS module: 	github.com/aws/aws-sdk-go-v2
 vSphere module: github.com/vmware/govmomi`
 )
 
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   appName,
 	Short: shortAppDesc,
 	Long: longAppDesc,
-// 	RunE: run,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		p := tea.NewProgram(model.InitialModel())
-		_, err := p.Run()
-		return err
+ 	RunE: func(cmd *cobra.Command, args []string) error {
+		launchTUI()
+	// RunE: func(cmd *cobra.Command, args []string) error {
+		// p := tea.NewProgram(model.InitialModel())
+		// _, err := p.Run()
+		// return err
+	return nil
 	},
 }
 
@@ -43,4 +46,16 @@ func Execute() {
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.Flags().BoolP("file", "f", false, "Load in an existing install-config.yaml")
+}
+
+func launchTUI() {
+	if !setup.BaseTemplateExists() {
+		cfg := setup.New()
+		model := model.InitialModel(cfg)
+		p := tea.NewProgram(model, tea.WithAltScreen())
+		if _, err := p.Run(); err != nil {
+			fmt.Printf("Error in setup: %v\n", err)
+			os.Exit(1)
+		}
+	}
 }

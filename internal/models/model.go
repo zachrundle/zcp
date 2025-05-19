@@ -2,29 +2,34 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/zachrundle/zcp/internal/setup"
 )
 
 type Cluster struct {
 	base *BaseCluster
 	adv  *AdvancedSettings
+	tui  *setup.TUIConfig
 }
 
 func (c Cluster) Init() tea.Cmd {
 	return tea.SetWindowTitle("zcp")
 }
 
-func InitialModel() Cluster {
+func InitialModel(cfg setup.TUIConfig) Cluster {
 	return Cluster{
 		base: &BaseCluster{
-			platform:  []string{"aws", "vsphere", "baremetal"},
+			platform: []string{"aws", "vsphere", "baremetal"},
 			selected: make(map[int]struct{}),
 			// You can initialize other fields here too if needed.
 		},
 		adv: &AdvancedSettings{
 			hyperThreading: false, // or whatever default makes sense
 		},
+		tui: &cfg,
 	}
 }
 
@@ -71,31 +76,52 @@ func (c Cluster) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (c Cluster) View() string {
-	// The header
-	s := "What platform are you deploying to?\n\n"
+	ts := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#3c71a8")).
+		MarginBottom(1).
+		Border(lipgloss.NormalBorder(), false, false, false, true, false).
+		BorderForeground(lipgloss.Color("#3c71a8")).
+		PaddingBottom(1)
 
-	// Iterate over our choices
-	for i, choice := range c.base.platform {
+	b := lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#3c71a8")).
+		Padding(1, 2).
+		Width(min(c.tui.Width-4, 80))
 
-		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
-		if c.base.cursor == i {
-			cursor = ">" // cursor!
-		}
+	h := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#3c71a8")).
+		Bold(true)
 
-		// Is this choice selected?
-		checked := " " // not selected
-		if _, ok := c.base.selected[i]; ok {
-			checked = "x" // selected!
-		}
+	f := lipgloss.NewStyle().
+		MarginTop(1)
 
-		// Render the row
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
-	}
+	t := ts.Render("zcp initial setup")
 
-	// The footer
-	s += "\nPress q to quit.\n"
+	var welcomeScreen string
+	awsSSOLogin := h.Render("'aws sso login --profile my-profile'")
+	awsConfigure := h.Render("'aws configure'")
 
-	// Send the UI for rendering
-	return s
+	welcomeScreen = fmt.Sprintf(`To use zcp, you need to ensure that you have logged into aws cli.
+
+If you are using AWS SSO, execute the following:
+%s
+
+If you are using API keys, execute the following:
+%s`,
+		awsSSOLogin, awsConfigure)
+
+	bx := b.Render(welcomeScreen)
+	ft := f.Render(c.base.keyPrompt)
+
+	pt := max(0, (c.tui.Height-lipgloss.Height(t)-lipgloss.Height(bx)-lipgloss.Height(ft)-4)/2)
+	pts := strings.Repeat("\n", pt)
+
+	return pts + lipgloss.JoinVertical(lipgloss.Center,
+		t,
+		bx,
+		ft,
+	)
 }
+
