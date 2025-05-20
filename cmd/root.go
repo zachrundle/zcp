@@ -7,7 +7,7 @@ import (
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
-	"github.com/zachrundle/zcp/internal/models"
+	"github.com/zachrundle/zcp/internal/tui"
 	"github.com/zachrundle/zcp/internal/setup"
 )
 
@@ -28,10 +28,6 @@ var rootCmd = &cobra.Command{
 	Long: longAppDesc,
  	RunE: func(cmd *cobra.Command, args []string) error {
 		launchTUI()
-	// RunE: func(cmd *cobra.Command, args []string) error {
-		// p := tea.NewProgram(model.InitialModel())
-		// _, err := p.Run()
-		// return err
 	return nil
 	},
 }
@@ -51,7 +47,7 @@ func init() {
 func launchTUI() {
 	if !setup.BaseTemplateExists() {
 		cfg := setup.New()
-		model := model.InitialModel(cfg)
+		model := tui.InitialModel(cfg)
 		p := tea.NewProgram(model, tea.WithAltScreen())
 		if _, err := p.Run(); err != nil {
 			fmt.Printf("Error in setup: %v\n", err)

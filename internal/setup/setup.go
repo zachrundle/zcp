@@ -3,7 +3,6 @@ package setup
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
 // setup Base config (apiVersion, default template, etc)
@@ -18,7 +17,7 @@ type TUIConfig struct {
 	templatePath   string
 	storagePath    string
 	done           bool
-	keyPrompt      string
+	KeyPrompt      string
 }
 
 func New() TUIConfig {
@@ -27,14 +26,12 @@ func New() TUIConfig {
 	storagePath := filepath.Join(homeDir, ".zcp", "install-configs")
 
 	keyPrompt := "Press Enter to continue..."
-	if runtime.GOOS == "windows" {
-		keyPrompt = "Press Enter to continue..."
-	}
+
 	return TUIConfig{
 		Height:       24,
 		Width:        80,
 		templatePath: templatePath,
 		storagePath:  storagePath,
-		keyPrompt:    keyPrompt,
+		KeyPrompt:    keyPrompt,
 	}
 }
